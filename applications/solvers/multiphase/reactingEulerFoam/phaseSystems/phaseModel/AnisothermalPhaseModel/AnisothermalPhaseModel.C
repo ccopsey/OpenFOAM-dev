@@ -32,21 +32,12 @@ template<class BasePhaseModel>
 Foam::AnisothermalPhaseModel<BasePhaseModel>::AnisothermalPhaseModel
 (
     const phaseSystem& fluid,
-    const word& phaseName
+    const word& phaseName,
+    const label index
 )
 :
-    BasePhaseModel(fluid, phaseName),
-    divU_
-    (
-        IOobject
-        (
-            IOobject::groupName("divU", this->name()),
-            fluid.mesh().time().timeName(),
-            fluid.mesh()
-        ),
-        fluid.mesh(),
-        dimensionedScalar("divU", dimless/dimTime, 0)
-    ),
+    BasePhaseModel(fluid, phaseName, index),
+    divU_(NULL),
     K_
     (
         IOobject
@@ -104,7 +95,7 @@ Foam::AnisothermalPhaseModel<BasePhaseModel>::heEqn()
 
     volScalarField& he = this->thermo_->he();
 
-    return
+    tmp<fvScalarMatrix> tEEqn
     (
         fvm::ddt(alpha, this->rho(), he) + fvm::div(alphaRhoPhi, he)
       - fvm::Sp(contErr, he)
@@ -118,28 +109,35 @@ Foam::AnisothermalPhaseModel<BasePhaseModel>::heEqn()
            *fvc::interpolate(alphaEff),
             he
         )
-
-      + (
-            he.name() == this->thermo_->phasePropertyName("e")
-          ? fvc::ddt(alpha)*this->thermo().p()
-          + fvc::div(alphaPhi, this->thermo().p())
-          : -alpha*this->fluid().dpdt()
-        )
      ==
         this->Sh()
     );
+
+    // Add the appropriate pressure-work term
+    if (he.name() == this->thermo_->phasePropertyName("e"))
+    {
+        tEEqn() +=
+            fvc::ddt(alpha)*this->thermo().p()
+          + fvc::div(alphaPhi, this->thermo().p());
+    }
+    else if (this->thermo_->dpdt())
+    {
+        tEEqn() -= alpha*this->fluid().dpdt();
+    }
+
+    return tEEqn;
 }
 
 
 template<class BasePhaseModel>
 bool Foam::AnisothermalPhaseModel<BasePhaseModel>::compressible() const
 {
-    return true;
+    return !this->thermo().incompressible();
 }
 
 
 template<class BasePhaseModel>
-const Foam::volScalarField&
+const Foam::tmp<Foam::volScalarField>&
 Foam::AnisothermalPhaseModel<BasePhaseModel>::divU() const
 {
     return divU_;
@@ -148,7 +146,10 @@ Foam::AnisothermalPhaseModel<BasePhaseModel>::divU() const
 
 template<class BasePhaseModel>
 void
-Foam::AnisothermalPhaseModel<BasePhaseModel>::divU(const volScalarField& divU)
+Foam::AnisothermalPhaseModel<BasePhaseModel>::divU
+(
+    const tmp<volScalarField>& divU
+)
 {
     divU_ = divU;
 }

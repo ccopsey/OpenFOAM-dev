@@ -133,6 +133,20 @@ private:
             //- Turbulent dispersion models
             turbulentDispersionModelTable turbulentDispersionModels_;
 
+            //- Construct element phasei of Fs if not set and return
+            //  Used by Fs()
+            volVectorField& setF
+            (
+                PtrList<volVectorField>& Fs, const label phasei
+            ) const;
+
+            //- Construct element phasei of phiDs if not set and return
+            //  Used by phiDs()
+            surfaceScalarField& setPhiD
+            (
+                PtrList<surfaceScalarField>& phiDs, const label phasei
+            ) const;
+
 
 public:
 
@@ -171,6 +185,15 @@ public:
 
         //- Return the combined force (lift + wall-lubrication)
         virtual tmp<volVectorField> F(const phasePairKey& key) const;
+
+        //- Return the combined force (lift + wall-lubrication)
+        virtual autoPtr<PtrList<volVectorField> > Fs() const;
+
+        //- Return the turbulent dispersion force on faces for phase pair
+        virtual autoPtr<PtrList<surfaceScalarField> > phiDs
+        (
+            const PtrList<volScalarField>& rAUs
+        ) const;
 
         //- Return the combined face-force (lift + wall-lubrication)
         virtual tmp<surfaceScalarField> Ff(const phasePairKey& key) const;

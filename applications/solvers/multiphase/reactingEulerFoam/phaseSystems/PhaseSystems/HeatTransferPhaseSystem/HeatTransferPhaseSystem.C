@@ -58,6 +58,16 @@ Foam::HeatTransferPhaseSystem<BasePhaseSystem>::~HeatTransferPhaseSystem()
 // * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * * //
 
 template<class BasePhaseSystem>
+bool Foam::HeatTransferPhaseSystem<BasePhaseSystem>::transfersMass
+(
+    const phaseModel& phase
+) const
+{
+    return false;
+}
+
+
+template<class BasePhaseSystem>
 Foam::tmp<Foam::volScalarField>
 Foam::HeatTransferPhaseSystem<BasePhaseSystem>::dmdt
 (
@@ -86,6 +96,17 @@ Foam::HeatTransferPhaseSystem<BasePhaseSystem>::dmdt
 
 
 template<class BasePhaseSystem>
+Foam::tmp<Foam::volScalarField>
+Foam::HeatTransferPhaseSystem<BasePhaseSystem>::dmdt
+(
+    const Foam::phaseModel& phase
+) const
+{
+    return tmp<volScalarField>(NULL);
+}
+
+
+template<class BasePhaseSystem>
 Foam::autoPtr<Foam::phaseSystem::heatTransferTable>
 Foam::HeatTransferPhaseSystem<BasePhaseSystem>::heatTransfer() const
 {
@@ -96,14 +117,9 @@ Foam::HeatTransferPhaseSystem<BasePhaseSystem>::heatTransfer() const
 
     phaseSystem::heatTransferTable& eqns = eqnsPtr();
 
-    forAllConstIter
-    (
-        phaseSystem::phaseModelTable,
-        this->phaseModels_,
-        phaseModelIter
-    )
+    forAll(this->phaseModels_, phasei)
     {
-        const phaseModel& phase(phaseModelIter());
+        const phaseModel& phase = this->phaseModels_[phasei];
 
         eqns.insert
         (

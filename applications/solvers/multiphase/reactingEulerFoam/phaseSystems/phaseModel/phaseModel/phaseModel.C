@@ -41,7 +41,8 @@ namespace Foam
 Foam::phaseModel::phaseModel
 (
     const phaseSystem& fluid,
-    const word& phaseName
+    const word& phaseName,
+    const label index
 )
 :
     volScalarField
@@ -60,6 +61,7 @@ Foam::phaseModel::phaseModel
 
     fluid_(fluid),
     name_(phaseName),
+    index_(index),
     residualAlpha_
     (
         "residualAlpha",
@@ -96,6 +98,12 @@ const Foam::word& Foam::phaseModel::name() const
 const Foam::word& Foam::phaseModel::keyword() const
 {
     return name_;
+}
+
+
+Foam::label Foam::phaseModel::index() const
+{
+    return index_;
 }
 
 
@@ -157,16 +165,17 @@ bool Foam::phaseModel::compressible() const
 }
 
 
-const Foam::volScalarField& Foam::phaseModel::divU() const
+const Foam::tmp<Foam::volScalarField>& Foam::phaseModel::divU() const
 {
     notImplemented("Foam::phaseModel::divU()");
-    return volScalarField::null();
+    static tmp<Foam::volScalarField> divU_(NULL);
+    return divU_;
 }
 
 
-void Foam::phaseModel::divU(const volScalarField& divU)
+void Foam::phaseModel::divU(const tmp<volScalarField>& divU)
 {
-    WarningIn("phaseModel::divU(const volScalarField& divU)")
+    WarningIn("phaseModel::divU(const tmp<volScalarField>& divU)")
         << "Attempt to set the dilatation rate of an incompressible phase"
         << endl;
 }

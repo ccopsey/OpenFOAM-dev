@@ -57,8 +57,8 @@ Foam::twoPhaseSystem::twoPhaseSystem
 )
 :
     phaseSystem(mesh),
-    phase1_(phaseModels_.first()),
-    phase2_(phaseModels_.last())
+    phase1_(phaseModels_[0]),
+    phase2_(phaseModels_[1])
 {
     phase2_.volScalarField::operator=(scalar(1) - phase1_);
 
@@ -168,6 +168,12 @@ Foam::twoPhaseSystem::D() const
 }
 
 
+bool Foam::twoPhaseSystem::transfersMass() const
+{
+    return transfersMass(phase1());
+}
+
+
 Foam::tmp<Foam::volScalarField>
 Foam::twoPhaseSystem::dmdt() const
 {
@@ -203,30 +209,30 @@ void Foam::twoPhaseSystem::solve()
     // Construct the dilatation rate source term
     tmp<volScalarField::DimensionedInternalField> tdgdt;
 
-    if (phase1_.compressible() && phase2_.compressible())
+    if (phase1_.divU().valid() && phase2_.divU().valid())
     {
         tdgdt =
         (
             alpha2.dimensionedInternalField()
-           *phase1_.divU().dimensionedInternalField()
+           *phase1_.divU()().dimensionedInternalField()
           - alpha1.dimensionedInternalField()
-           *phase2_.divU().dimensionedInternalField()
+           *phase2_.divU()().dimensionedInternalField()
         );
     }
-    else if (phase1_.compressible())
+    else if (phase1_.divU().valid())
     {
         tdgdt =
         (
             alpha2.dimensionedInternalField()
-           *phase1_.divU().dimensionedInternalField()
+           *phase1_.divU()().dimensionedInternalField()
         );
     }
-    else if (phase2_.compressible())
+    else if (phase2_.divU().valid())
     {
         tdgdt =
         (
           - alpha1.dimensionedInternalField()
-           *phase2_.divU().dimensionedInternalField()
+           *phase2_.divU()().dimensionedInternalField()
         );
     }
 
