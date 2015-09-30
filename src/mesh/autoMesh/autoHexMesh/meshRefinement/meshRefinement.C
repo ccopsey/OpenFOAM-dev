@@ -2746,8 +2746,15 @@ const
             }
         }
 
+/*
         Info<< msg.c_str()
             << " : cells:" << pData.nTotalCells()
+            << "  faces:" << returnReduce(nMasterFaces, sumOp<label>())
+            << "  points:" << returnReduce(nMasterPoints, sumOp<label>())
+            << endl;
+*/
+        Info<< msg.c_str()
+            << " : cells:" << returnReduce(mesh_.nCells(), sumOp<label>())
             << "  faces:" << returnReduce(nMasterFaces, sumOp<label>())
             << "  points:" << returnReduce(nMasterPoints, sumOp<label>())
             << endl;

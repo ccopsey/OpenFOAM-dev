@@ -2318,8 +2318,19 @@ Foam::meshRefinement::refineAndBalance
 
     if (Pstream::nProcs() > 1)
     {
+/*
         scalar nIdealCells =
             mesh_.globalData().nTotalCells()
+          / Pstream::nProcs();
+*/
+        scalar nTotalCells = returnReduce
+        (
+            mesh_.nCells(),
+            sumOp<label>()
+        );
+
+        scalar nIdealCells =
+            nTotalCells
           / Pstream::nProcs();
 
         scalar unbalance = returnReduce
@@ -2336,6 +2347,8 @@ Foam::meshRefinement::refineAndBalance
         }
         else
         {
+            Info<< "Max unbalance : " << unbalance << endl;
+
             scalarField cellWeights(mesh_.nCells(), 1);
 
             distMap = balance
