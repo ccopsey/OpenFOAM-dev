@@ -260,7 +260,7 @@ Foam::autoPtr<Foam::fvMesh> Foam::loadOrCreateMesh
                 )   << "Non-processor patches not synchronised."
                     << endl
                     << "Master patch " << patchI
-                    << " name:" << type
+                    << " name:" << name
                     << " type:" << type << endl
                     << "Processor " << Pstream::myProcNo()
                     << " patch " << patchI
