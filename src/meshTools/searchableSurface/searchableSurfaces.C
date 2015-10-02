@@ -242,7 +242,7 @@ Foam::searchableSurfaces::searchableSurfaces
         {
             forAll(localNames, regionI)
             {
-                rNames[regionI] = names_[surfI] + '_' + localNames[regionI];
+                rNames[regionI] = names_[surfI] + '.' + localNames[regionI];
             }
         }
 
